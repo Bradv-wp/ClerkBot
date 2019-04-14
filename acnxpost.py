@@ -64,7 +64,7 @@ def run(wiki):
                 if section.level == 2 and section.contents.strip().endswith("(UTC)") and section.contents.find(TACN) == -1:
                     if auth():
                         title = section.title.strip()
-                        linkstrippedtitle = re.sub('\[\[(?:.*\|)?(.*?)\]\]', '\1', title)
+                        linkstrippedtitle = re.sub('\[\[(?:.*?\|)?(.*?)\]\]', '\1', title)
                         logging.info('Found new section ' + ACN + '#' + title)
                         a = "\n: Discuss this at: '''[[" + TACN + "#" + linkstrippedtitle + "]]'''{{subst:hes}}\n\n"
                         announcement = section.contents.strip() + a
