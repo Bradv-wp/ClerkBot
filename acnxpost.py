@@ -40,12 +40,12 @@ def run(wiki):
             authusers.extend([user.page_title for user in authpage.links(namespace=2)])
             return lasteditor in authusers
 
-        def xpost(target, title, announcement, ignoreerrors=False):
+        def xpost(target, linkstrippedtitle, announcement, ignoreerrors=False):
             try:
-                logging.info('Crossposting to ' + target + '#' + title)
+                logging.info('Crossposting to ' + target + '#' + linkstrippedtitle)
                 p = wiki.pages[target]
-                if p.text().find("== " + title + " ==") == -1:
-                    p.save(p.text() + '\n== ' + title + ' ==\n' + announcement, '/* ' + title + ' */ Crossposting from [[' + ACN + ']] (bot)', minor=False, bot=False)
+                if p.text().find("== " + linkstrippedtitle + " ==") == -1:
+                    p.save(p.text() + '\n== ' + linkstrippedtitle + ' ==\n' + announcement, '/* ' + linkstrippedtitle + ' */ Crossposting from [[' + ACN + ']] (bot)', minor=False, bot=False)
                 else:
                     logging.warning('Section already exists.')
             except Exception as e:
@@ -64,27 +64,28 @@ def run(wiki):
                 if section.level == 2 and section.contents.strip().endswith("(UTC)") and section.contents.find(TACN) == -1:
                     if auth():
                         title = section.title.strip()
+                        linkstrippedtitle = re.sub('\[\[(?:.*\|)?(.*?)\]\]', '\1', title)
                         logging.info('Found new section ' + ACN + '#' + title)
-                        a = "\n: Discuss this at: '''[[" + TACN + "#" + title + "]]'''{{subst:hes}}\n\n"
+                        a = "\n: Discuss this at: '''[[" + TACN + "#" + linkstrippedtitle + "]]'''{{subst:hes}}\n\n"
                         announcement = section.contents.strip() + a
                         section.contents = announcement
 
-                        logging.info('Creating talk section ' + TACN + '#' + title)
+                        logging.info('Creating talk section ' + TACN + '#' + linkstrippedtitle)
                         talkpage = wiki.pages[TACN]
-                        a = "\n== " + title + " ==\n: [[" + ACN + "#" + title + "|'''Original announcement''']]{{subst:hes}}\n"
+                        a = "\n== " + title + " ==\n: [[" + ACN + "#" + linkstrippedtitle + "|'''Original announcement''']]{{subst:hes}}\n"
                         if talkpage.text().find("== " + title + " ==") == -1:
                             talkpage.save(talkpage.text() + a, '/* ' + title + ' */ Creating talk page section (bot)', minor=True, bot=True)
                         else:
                             logging.warning('Section already exists.')
 
-                        xpost(AN, title, announcement)
+                        xpost(AN, linkstrippedtitle, announcement)
 
                         xpostusers = []
                         for ul in [user.page_title for user in page.links(namespace=2)]:
                             if re.search('[:|]' + ul + '[]|}]', announcement) and ul not in authusers:
                                 xpostusers.append("User talk:" + ul)
                         for user in xpostusers:
-                            xpost(user, title, announcement, True)
+                            xpost(user, linkstrippedtitle, announcement, True)
 
                         updated = True
                     else:
