@@ -26,7 +26,8 @@ connection = requests.Session()
 connection.cookies = cookie_jar  # Tell Requests session to use the cookiejar.
 
 wiki = mwclient.Site(settings['site'], path=settings['path'], clients_useragent=settings['ua'], pool=connection)
-if not wiki.logged_in:wiki.login(settings['user'], settings['bot_password'])
+if not wiki.logged_in:
+	wiki.login(settings['user'], settings['bot_password'])
 logging.info("Logged in to " + settings['site'] + " as user " + settings['user'])
 
 # Save cookies to file, including session cookies (expirydate=0)
