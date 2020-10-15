@@ -4,6 +4,6 @@
         "bot_password": "password",
         "account_password": "password",
         "path": "/w/",
-        "ua": "ArbClerkBot/0.1 https://github.com/arbcom/ArbClerkBot",
+        "ua": "ArbClerkBot/0.2 https://github.com/arbcom/ArbClerkBot",
         "cookie_path": "~/arbclerkbot/cookies.txt"
 }
