@@ -25,7 +25,7 @@ logging.info('We have %d cookies' % len(cookie_jar))
 connection = requests.Session()
 connection.cookies = cookie_jar  # Tell Requests session to use the cookiejar.
 
-wiki = mwclient.Site(settings['site'], path=settings['path'], clients_useragent=settings['ua'])
+wiki = mwclient.Site(settings['site'], path=settings['path'], clients_useragent=settings['ua'], pool=connection)
 if not wiki.logged_in:wiki.login(settings['user'], settings['bot_password'])
 logging.info("Logged in to " + settings['site'] + " as user " + settings['user'])
 
