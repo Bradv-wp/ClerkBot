@@ -29,4 +29,8 @@ wiki = mwclient.Site(settings['site'], path=settings['path'], clients_useragent=
 if not wiki.logged_in:wiki.login(settings['user'], settings['bot_password'])
 logging.info("Logged in to " + settings['site'] + " as user " + settings['user'])
 
+# Save cookies to file, including session cookies (expirydate=0)
+logging.info(connection.cookies)
+cookie_jar.save(ignore_discard=True, ignore_expires=True)
+
 acnxpost.run(wiki)
