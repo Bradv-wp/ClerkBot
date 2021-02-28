@@ -40,14 +40,14 @@ def run(wiki):
             authusers.extend([user.page_title for user in authpage.links(namespace=2)])
             return lasteditor in authusers
 
-        def xpost(target, announcement, ignoreerrors=False):
+        def xpost(target, announcement, discuss, ignoreerrors=False):
             try:
                 title = parser.parse(announcement).filter_headings()[0].title.strip()
                 titletext = parser.parse(title).strip_code()
                 logging.info('Crossposting to ' + target)
                 p = wiki.pages[target].resolve_redirect()
                 if p.text().find("\n== " + title + " ==") == -1:
-                    p.save(p.text() + "\n" + announcement, '/* ' + titletext + ' */ Crossposting from [[' + ACN + ']] (bot)', minor=False, bot=False)
+                    p.save(p.text() + "\n" + announcement + (discuss if discuss is not False else "{{subst:hes}}\n\n"), '/* ' + titletext + ' */ Crossposting from [[' + ACN + ']] (bot)', minor=False, bot=False)
                 else:
                     logging.warning('Section already exists.')
             except Exception as e:
@@ -71,7 +71,7 @@ def run(wiki):
                         logging.info('Found new section ' + ACN + '#' + titletext)
                         #discuss = "\n: Discuss this at: '''[[" + TACN + "#" + titletext + "]]'''{{subst:hes}}\n\n"
                         discuss = "\n: Discuss this at: '''{{slink|" + TACN + "|" + titletext + "}}'''{{subst:hes}}\n\n"
-                        announcement = str(section) + discuss
+                        announcement = str(section)
                         section.append(discuss)
                         if changed_section is None:
                             changed_section = titletext
@@ -86,14 +86,24 @@ def run(wiki):
                         else:
                             logging.warning('Section already exists.')
 
-                        xpost(AN, announcement)
+                        xpost(AN, announcement, discuss)
 
                         xpostusers = []
+                        xignorediscusslink = []
                         for ul in [user.page_title for user in page.links(namespace=2)]:
                             if re.search('[:|]' + ul + '[]|}]', announcement) and ul not in authusers:
                                 xpostusers.append("User talk:" + ul)
+                        for comment in section.filter_comments():
+                            comment = (comment.split("<!--", maxsplit=1)[1]).split("-->", maxsplit=1)[0]
+                            if re.match("[ ]*Don't post discuss link for.*", comment, re.I):
+                                xignorediscusslink = re.match("[ ]*Don't post discuss link for[:]?[ ]*(.*)", comment, re.I)
+                                xignorediscusslink = xignorediscusslink.groups()[0].split(", ")
+                                xignorediscusslink = [x.strip() for x in xignorediscusslink.groups()[0].split(", ")]
                         for user in xpostusers:
-                            xpost(user, announcement, True)
+                            if user in xignorediscusslink:
+                                xpost(user, announcment, False, True)
+                            else:
+                                xpost(user, announcement, discuss, True)
 
                         updated = True
                     else:
